@@ -1,0 +1,176 @@
+// Numeric helpers. Native functions report domain and range errors explicitly.
+public class math {
+    public extern fn sin(USKDouble value) : USKDouble;
+    public extern fn cos(USKDouble value) : USKDouble;
+    public extern fn tan(USKDouble value) : USKDouble;
+    public extern fn asin(USKDouble value) : USKDouble;
+    public extern fn acos(USKDouble value) : USKDouble;
+    public extern fn atan(USKDouble value) : USKDouble;
+    public extern fn atan2(USKDouble y, USKDouble x) : USKDouble;
+    public extern fn exp(USKDouble value) : USKDouble;
+    public extern fn log(USKDouble value) : USKDouble;
+    public extern fn log10(USKDouble value) : USKDouble;
+    public extern fn pow(USKDouble base, USKDouble exponent) : USKDouble;
+    public extern fn sqrt(USKDouble value) : USKDouble;
+    public extern fn floor(USKDouble value) : USKDouble;
+    public extern fn ceil(USKDouble value) : USKDouble;
+    public extern fn round(USKDouble value) : USKDouble;
+    public extern fn abs(USKAuto value) : USKAuto;
+    public extern fn min(USKAuto left, USKAuto right) : USKAuto;
+    public extern fn max(USKAuto left, USKAuto right) : USKAuto;
+    public extern fn clamp(USKAuto value, USKAuto minimum,
+                           USKAuto maximum) : USKAuto;
+    public extern fn lerp(USKDouble start, USKDouble end,
+                          USKDouble amount) : USKDouble;
+    public extern fn is_finite(USKDouble value) : USKBool;
+    public extern fn pi() : USKDouble;
+    public extern fn e() : USKDouble;
+
+    public fn degrees(USKDouble radians) : USKDouble {
+        return radians * 180.0 / math::pi();
+    }
+
+    public fn radians(USKDouble degrees) : USKDouble {
+        return degrees * math::pi() / 180.0;
+    }
+
+    public fn square(USKDouble value) : USKDouble {
+        return value * value;
+    }
+
+    public fn cube(USKDouble value) : USKDouble {
+        return value * value * value;
+    }
+
+    public fn hypot(USKDouble x, USKDouble y) : USKDouble {
+        return math::sqrt(x * x + y * y);
+    }
+
+    public fn distance(USKDouble x1, USKDouble y1,
+                       USKDouble x2, USKDouble y2) : USKDouble {
+        return math::hypot(x2 - x1, y2 - y1);
+    }
+
+    public fn sign(USKDouble value) : USKInt {
+        if (value < 0.0) return -1;
+        if (value > 0.0) return 1;
+        return 0;
+    }
+
+    public fn clamp_unit(USKDouble value) : USKDouble {
+        return math::clamp(value, -1.0, 1.0);
+    }
+
+    public fn map_range(USKDouble value, USKDouble input_minimum,
+                        USKDouble input_maximum, USKDouble output_minimum,
+                        USKDouble output_maximum) : USKDouble {
+        if (input_minimum == input_maximum) return output_minimum;
+        var USKDouble amount = (value - input_minimum) /
+            (input_maximum - input_minimum);
+        return math::lerp(output_minimum, output_maximum, amount);
+    }
+
+    public fn smoothstep(USKDouble edge0, USKDouble edge1,
+                         USKDouble value) : USKDouble {
+        if (edge0 == edge1) return value < edge0 ? 0.0 : 1.0;
+        var USKDouble amount = (value - edge0) / (edge1 - edge0);
+        amount = math::clamp(amount, 0.0, 1.0);
+        return amount * amount * (3.0 - 2.0 * amount);
+    }
+
+    public fn wrap(USKDouble value, USKDouble minimum,
+                   USKDouble maximum) : USKDouble {
+        var USKDouble width = maximum - minimum;
+        if (width <= 0.0) return minimum;
+        var USKDouble shifted = value - minimum;
+        var USKDouble wrapped = shifted - math::floor(shifted / width) * width;
+        return wrapped + minimum;
+    }
+
+    public fn is_even(USKInt value) : USKBool {
+        return value % 2 == 0;
+    }
+
+    public fn is_odd(USKInt value) : USKBool {
+        return value % 2 != 0;
+    }
+
+    public fn sum(USKDouble values[]) : USKDouble {
+        var USKDouble total = 0.0;
+        var USKInt index = 0;
+        while (index < values.length) {
+            total += values[index];
+            index += 1;
+        }
+        return total;
+    }
+
+    public fn average(USKDouble values[]) : USKDouble {
+        if (values.length == 0) return 0.0;
+        return math::sum(values) / values.length;
+    }
+
+    public fn minimum(USKDouble values[]) : USKDouble {
+        if (values.length == 0) return 0.0;
+        var USKDouble result = values[0];
+        var USKInt index = 1;
+        while (index < values.length) {
+            result = math::min(result, values[index]);
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn maximum(USKDouble values[]) : USKDouble {
+        if (values.length == 0) return 0.0;
+        var USKDouble result = values[0];
+        var USKInt index = 1;
+        while (index < values.length) {
+            result = math::max(result, values[index]);
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn variance(USKDouble values[]) : USKDouble {
+        if (values.length == 0) return 0.0;
+        var USKDouble mean = math::average(values);
+        var USKDouble total = 0.0;
+        var USKInt index = 0;
+        while (index < values.length) {
+            var USKDouble difference = values[index] - mean;
+            total += difference * difference;
+            index += 1;
+        }
+        return total / values.length;
+    }
+
+    public fn standard_deviation(USKDouble values[]) : USKDouble {
+        return math::sqrt(math::variance(values));
+    }
+
+    public fn factorial(USKInt value) : USKInt {
+        if (value < 0) return 0;
+        var USKInt result = 1;
+        var USKInt index = 2;
+        while (index <= value) {
+            result *= index;
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn fibonacci(USKInt count) : USKInt[] {
+        var USKInt values[] = [];
+        if (count <= 0) return values;
+        values.push(0);
+        if (count == 1) return values;
+        values.push(1);
+        var USKInt index = 2;
+        while (index < count) {
+            values.push(values[index - 1] + values[index - 2]);
+            index += 1;
+        }
+        return values;
+    }
+}

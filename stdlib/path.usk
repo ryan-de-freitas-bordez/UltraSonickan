@@ -1,0 +1,155 @@
+// Portable lexical path helpers; these routines never touch the filesystem.
+// Normalized output uses '/' on every host and preserves relative paths.
+public class Paths {
+    public fn basename(USKString value) : USKString {
+        return path::basename(value);
+    }
+
+    public fn parent(USKString value) : USKString {
+        return path::dirname(value);
+    }
+
+    public fn extension_without_dot(USKString value) : USKString {
+        return path::extension(value);
+    }
+
+    public fn extension_with_dot(USKString value) : USKString {
+        var USKString extension = path::extension(value);
+        if (extension.length == 0) return "";
+        return "." + extension;
+    }
+
+    public fn stem(USKString value) : USKString {
+        return path::stem(value);
+    }
+
+    public fn normalized(USKString value) : USKString {
+        return path::normalize(value);
+    }
+
+    public fn join(USKString left, USKString right) : USKString {
+        return path::join(left, right);
+    }
+
+    public fn join_three(USKString first, USKString second,
+                         USKString third) : USKString {
+        return path::join(path::join(first, second), third);
+    }
+
+    public fn join_four(USKString first, USKString second,
+                        USKString third, USKString fourth) : USKString {
+        var USKString prefix = path::join(first, second);
+        prefix = path::join(prefix, third);
+        return path::join(prefix, fourth);
+    }
+
+    public fn is_absolute(USKString value) : USKBool {
+        return path::is_absolute(value);
+    }
+
+    public fn is_relative(USKString value) : USKBool {
+        return !path::is_absolute(value);
+    }
+
+    public fn components(USKString value) : USKInt {
+        return path::component_count(value);
+    }
+
+    public fn has_extension(USKString value, USKString extension) : USKBool {
+        var USKString with_dot = extension;
+        if (extension.length > 0 && extension[0] != ".")
+            with_dot = "." + extension;
+        return path::has_extension(value, with_dot);
+    }
+
+    public fn replace_extension(USKString value,
+                                USKString extension) : USKString {
+        return path::change_extension(value, extension);
+    }
+
+    public fn append_extension(USKString value,
+                              USKString extension) : USKString {
+        if (path::extension(value).length > 0) return value;
+        return path::change_extension(value, extension);
+    }
+
+    public fn extension_or(USKString value,
+                           USKString fallback) : USKString {
+        var USKString extension = path::extension(value);
+        if (extension.length == 0) return fallback;
+        return extension;
+    }
+
+    public fn is_dotfile(USKString value) : USKBool {
+        var USKString name = path::basename(value);
+        if (name.length < 2) return false;
+        return name[0] == ".";
+    }
+
+    public fn has_parent(USKString value) : USKBool {
+        var USKString directory = path::dirname(value);
+        return directory != "." && directory != value;
+    }
+
+    public fn resolve_under(USKString base, USKString child) : USKString {
+        if (path::is_absolute(child)) return path::normalize(child);
+        return path::normalize(path::join(base, child));
+    }
+
+    public fn sibling(USKString value, USKString other_name) : USKString {
+        return path::join(path::dirname(value), other_name);
+    }
+
+    public fn extension_is_source(USKString value) : USKBool {
+        return path::has_extension(value, ".usk");
+    }
+
+    public fn extension_is_header(USKString value) : USKBool {
+        return path::has_extension(value, ".h");
+    }
+
+    public fn extension_is_c_source(USKString value) : USKBool {
+        return path::has_extension(value, ".c");
+    }
+
+    public fn compare_normalized(USKString left,
+                                USKString right) : USKBool {
+        return path::normalize(left) == path::normalize(right);
+    }
+
+    public fn common_prefix(USKString left, USKString right) : USKString {
+        var USKInt index = 0;
+        var USKInt limit = left.length;
+        if (right.length < limit) limit = right.length;
+        while (index < limit && left[index] == right[index]) index += 1;
+        return string::substring(left, 0, index);
+    }
+
+    public fn ensure_separator(USKString value) : USKString {
+        if (value.length == 0) return "/";
+        var USKChar last = value[value.length - 1];
+        var USKString normalized = path::normalize(value);
+        var USKChar normalized_last = normalized[normalized.length - 1];
+        if (normalized_last == "/") return normalized;
+        return normalized + "/";
+    }
+
+    public fn strip_trailing_separators(USKString value) : USKString {
+        var USKInt end = value.length;
+        while (end > 1) {
+            var USKChar last = value[end - 1];
+            if (last != "/" && last != "\\") break;
+            end -= 1;
+        }
+        return string::substring(value, 0, end);
+    }
+
+    public fn join_many(USKString parts[]) : USKString {
+        var USKString result = "";
+        for (var USKString part in parts) {
+            if (result.length == 0) result = part;
+            else result = path::join(result, part);
+        }
+        return path::normalize(result);
+    }
+}

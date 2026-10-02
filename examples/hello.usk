@@ -1,0 +1,10 @@
+import <iostream.usk>
+
+[EntryPoint]:
+- ([pub]class)Main : [[use] iostream::io]
+{
+- (fn)main(USKString args[]) {
+    io::writef("Hello World! {}", /n);
+}
+}
+[EntryPoint::End]

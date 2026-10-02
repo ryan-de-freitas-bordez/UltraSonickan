@@ -1,0 +1,229 @@
+// Deterministic, allocation-bounded sequence algorithms over USK arrays.
+// Sorting helpers copy before mutation; explicit in-place variants are named.
+public class algorithm {
+    public fn insertion_sort_int(USKInt values[]) : USKInt[] {
+        var USKInt result[] = values.copy();
+        var USKInt index = 1;
+        while (index < result.length) {
+            var USKInt value = result[index];
+            var USKInt cursor = index;
+            while (cursor > 0 && result[cursor - 1] > value) {
+                result[cursor] = result[cursor - 1];
+                cursor -= 1;
+            }
+            result[cursor] = value;
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn insertion_sort_descending_int(USKInt values[]) : USKInt[] {
+        var USKInt result[] = values.copy();
+        var USKInt index = 1;
+        while (index < result.length) {
+            var USKInt value = result[index];
+            var USKInt cursor = index;
+            while (cursor > 0 && result[cursor - 1] < value) {
+                result[cursor] = result[cursor - 1];
+                cursor -= 1;
+            }
+            result[cursor] = value;
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn binary_search_int(USKInt sorted[], USKInt target) : USKInt {
+        var USKInt low = 0;
+        var USKInt high = sorted.length;
+        while (low < high) {
+            var USKInt middle = low + (high - low) / 2;
+            if (sorted[middle] == target) return middle;
+            if (sorted[middle] < target) low = middle + 1;
+            else high = middle;
+        }
+        return -1;
+    }
+
+    public fn lower_bound_int(USKInt sorted[], USKInt target) : USKInt {
+        var USKInt low = 0;
+        var USKInt high = sorted.length;
+        while (low < high) {
+            var USKInt middle = low + (high - low) / 2;
+            if (sorted[middle] < target) low = middle + 1;
+            else high = middle;
+        }
+        return low;
+    }
+
+    public fn upper_bound_int(USKInt sorted[], USKInt target) : USKInt {
+        var USKInt low = 0;
+        var USKInt high = sorted.length;
+        while (low < high) {
+            var USKInt middle = low + (high - low) / 2;
+            if (sorted[middle] <= target) low = middle + 1;
+            else high = middle;
+        }
+        return low;
+    }
+
+    public fn equal_range_count_int(USKInt sorted[], USKInt target) : USKInt {
+        var USKInt first = algorithm::lower_bound_int(sorted, target);
+        var USKInt after = algorithm::upper_bound_int(sorted, target);
+        return after - first;
+    }
+
+    public fn is_sorted_int(USKInt values[]) : USKBool {
+        if (values.length < 2) return true;
+        var USKInt index = 1;
+        while (index < values.length) {
+            if (values[index] < values[index - 1]) return false;
+            index += 1;
+        }
+        return true;
+    }
+
+    public fn reverse_in_place_int(USKInt values[]) : USKNull {
+        var USKInt left = 0;
+        var USKInt right = values.length;
+        while (left < right) {
+            right -= 1;
+            if (left >= right) break;
+            var USKInt temporary = values[left];
+            values[left] = values[right];
+            values[right] = temporary;
+            left += 1;
+        }
+    }
+
+    public fn rotate_int(USKInt values[], USKInt distance) : USKInt[] {
+        var USKInt count = values.length;
+        var USKInt result[] = [];
+        if (count == 0) return result;
+        var USKInt offset = distance % count;
+        if (offset < 0) offset += count;
+        var USKInt index = 0;
+        while (index < count) {
+            result.push(values[(index + offset) % count]);
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn unique_sorted_int(USKInt sorted[]) : USKInt[] {
+        var USKInt result[] = [];
+        var USKInt index = 0;
+        while (index < sorted.length) {
+            var USKInt value = sorted[index];
+            result.push(value);
+            index += 1;
+            while (index < sorted.length && sorted[index] == value) {
+                index += 1;
+            }
+        }
+        return result;
+    }
+
+    public fn merge_sorted_int(USKInt left[], USKInt right[]) : USKInt[] {
+        var USKInt result[] = [];
+        result.reserve(left.length + right.length);
+        var USKInt left_index = 0;
+        var USKInt right_index = 0;
+        while (left_index < left.length && right_index < right.length) {
+            if (left[left_index] <= right[right_index]) {
+                result.push(left[left_index]);
+                left_index += 1;
+            } else {
+                result.push(right[right_index]);
+                right_index += 1;
+            }
+        }
+        while (left_index < left.length) {
+            result.push(left[left_index]);
+            left_index += 1;
+        }
+        while (right_index < right.length) {
+            result.push(right[right_index]);
+            right_index += 1;
+        }
+        return result;
+    }
+
+    public fn prefix_sum_int(USKInt values[]) : USKInt[] {
+        var USKInt result[] = [];
+        result.reserve(values.length);
+        var USKInt total = 0;
+        for (var USKInt value in values) {
+            total += value;
+            result.push(total);
+        }
+        return result;
+    }
+
+    public fn adjacent_difference_int(USKInt values[]) : USKInt[] {
+        var USKInt result[] = [];
+        if (values.length == 0) return result;
+        result.push(values[0]);
+        var USKInt index = 1;
+        while (index < values.length) {
+            result.push(values[index] - values[index - 1]);
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn dot_product_int(USKInt left[], USKInt right[]) : USKInt {
+        var USKInt count = left.length;
+        if (right.length < count) count = right.length;
+        var USKInt total = 0;
+        var USKInt index = 0;
+        while (index < count) {
+            total += left[index] * right[index];
+            index += 1;
+        }
+        return total;
+    }
+
+    public fn first_index_int(USKInt values[], USKInt target) : USKInt {
+        var USKInt index = 0;
+        while (index < values.length) {
+            if (values[index] == target) return index;
+            index += 1;
+        }
+        return -1;
+    }
+
+    public fn last_index_int(USKInt values[], USKInt target) : USKInt {
+        var USKInt index = values.length;
+        while (index > 0) {
+            index -= 1;
+            if (values[index] == target) return index;
+        }
+        return -1;
+    }
+
+    public fn all_nonnegative_int(USKInt values[]) : USKBool {
+        for (var USKInt value in values) {
+            if (value < 0) return false;
+        }
+        return true;
+    }
+
+    public fn any_zero_int(USKInt values[]) : USKBool {
+        for (var USKInt value in values) {
+            if (value == 0) return true;
+        }
+        return false;
+    }
+
+    public fn partition_nonnegative_int(USKInt values[]) : USKInt[] {
+        var USKInt result[] = [];
+        for (var USKInt value in values) {
+            if (value >= 0) result.push(value);
+        }
+        for (var USKInt value in values) {
+            if (value < 0) result.push(value);
+        }
+        return result;
+    }
+}

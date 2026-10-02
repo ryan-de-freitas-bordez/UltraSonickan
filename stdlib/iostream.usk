@@ -1,0 +1,192 @@
+// Standard stream interface and convenience operations.
+// The primitive operations are linked by the C runtime; the helpers below
+// are ordinary UltraSonickan functions built on that small ABI.
+// No allocation service or collector is hidden behind this module.
+public class io {
+    public extern fn writef(USKString format, USKAuto values[]) : USKNull;
+    public extern fn write(USKAuto value) : USKNull;
+    public extern fn writeln() : USKNull;
+    public extern fn readline() : USKString;
+
+    public fn write_string(USKString value) : USKNull {
+        io::write(value);
+    }
+
+    public fn write_character(USKChar value) : USKNull {
+        io::write(value);
+    }
+
+    public fn write_integer(USKInt value) : USKNull {
+        io::writef("{}", value);
+    }
+
+    public fn write_double(USKDouble value) : USKNull {
+        io::writef("{}", value);
+    }
+
+    public fn write_float(USKFloat value) : USKNull {
+        io::writef("{}", value);
+    }
+
+    public fn write_boolean(USKBool value) : USKNull {
+        io::writef("{}", value);
+    }
+
+    public fn write_null() : USKNull {
+        io::write("null");
+    }
+
+    public fn write_line(USKAuto value) : USKNull {
+        io::write(value);
+        io::writeln();
+    }
+
+    public fn write_string_line(USKString value) : USKNull {
+        io::write(value);
+        io::writeln();
+    }
+
+    public fn write_integer_line(USKInt value) : USKNull {
+        io::writef("{}", value);
+        io::writeln();
+    }
+
+    public fn write_double_line(USKDouble value) : USKNull {
+        io::writef("{}", value);
+        io::writeln();
+    }
+
+    public fn write_boolean_line(USKBool value) : USKNull {
+        io::writef("{}", value);
+        io::writeln();
+    }
+
+    public fn write_pair(USKAuto left, USKAuto right) : USKNull {
+        io::writef("{}{}", left, right);
+    }
+
+    public fn write_key_value(USKString key, USKAuto value) : USKNull {
+        io::writef("{}: {}", key, value);
+    }
+
+    public fn write_key_value_line(USKString key, USKAuto value) : USKNull {
+        io::writef("{}: {}", key, value);
+        io::writeln();
+    }
+
+    public fn write_error(USKString message) : USKNull {
+        io::writef("error: {}", message);
+    }
+
+    public fn write_error_line(USKString message) : USKNull {
+        io::writef("error: {}", message);
+        io::writeln();
+    }
+
+    public fn write_warning(USKString message) : USKNull {
+        io::writef("warning: {}", message);
+    }
+
+    public fn write_warning_line(USKString message) : USKNull {
+        io::writef("warning: {}", message);
+        io::writeln();
+    }
+
+    public fn write_heading(USKString title) : USKNull {
+        io::writef("== {} ==", title);
+    }
+
+    public fn write_heading_line(USKString title) : USKNull {
+        io::writef("== {} ==", title);
+        io::writeln();
+    }
+
+    public fn write_prompt(USKString prompt) : USKNull {
+        io::write(prompt);
+    }
+
+    public fn prompt_line(USKString prompt) : USKString {
+        io::write(prompt);
+        return io::readline();
+    }
+
+    public fn write_blank_line() : USKNull {
+        io::writeln();
+    }
+
+    public fn write_blank_lines(USKInt count) : USKNull {
+        var USKInt index = 0;
+        while (index < count) {
+            io::writeln();
+            index += 1;
+        }
+    }
+
+    public fn write_repeated(USKInt count, USKChar character) : USKNull {
+        var USKInt index = 0;
+        while (index < count) {
+            io::write(character);
+            index += 1;
+        }
+    }
+
+    public fn write_separator(USKInt count, USKChar character) : USKNull {
+        io::write_repeated(count, character);
+        io::writeln();
+    }
+
+    public fn write_centered_marker(USKString marker, USKInt count) : USKNull {
+        var USKInt index = 0;
+        while (index < count) {
+            io::write(marker);
+            index += 1;
+        }
+    }
+
+    public fn write_section(USKString title, USKChar underline,
+                            USKInt width) : USKNull {
+        io::write_heading_line(title);
+        io::write_separator(width, underline);
+    }
+
+    public fn read_prompted_line(USKString prompt) : USKString {
+        io::write(prompt);
+        return io::readline();
+    }
+
+    public fn write_status(USKString name, USKBool success) : USKNull {
+        if (success) {
+            io::write_key_value_line(name, "ok");
+        } else {
+            io::write_key_value_line(name, "failed");
+        }
+    }
+
+    public fn write_integer_pair(USKInt left, USKInt right) : USKNull {
+        io::writef("{} {}", left, right);
+    }
+
+    public fn write_integer_pair_line(USKInt left, USKInt right) : USKNull {
+        io::writef("{} {}", left, right);
+        io::writeln();
+    }
+
+    public fn write_version(USKInt major, USKInt minor, USKInt patch) : USKNull {
+        io::writef("{}.{}.{}", major, minor, patch);
+    }
+
+    public fn write_version_line(USKInt major, USKInt minor,
+                                 USKInt patch) : USKNull {
+        io::writef("{}.{}.{}", major, minor, patch);
+        io::writeln();
+    }
+
+    public fn write_array_length(USKAuto values[]) : USKNull {
+        io::writef("{}", values.length);
+    }
+
+    public fn write_array_length_line(USKAuto values[]) : USKNull {
+        io::writef("{}", values.length);
+        io::writeln();
+    }
+}

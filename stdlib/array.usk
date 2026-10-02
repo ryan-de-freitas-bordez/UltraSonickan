@@ -1,0 +1,164 @@
+// Typed convenience algorithms built on the arena-owned array runtime.
+// Array mutation updates aliases; copy and slice allocate in the caller region.
+public class array {
+    public fn clone_int(USKInt source[]) : USKInt[] {
+        var USKInt result[] = [];
+        for (var USKInt item in source) {
+            result.push(item);
+        }
+        return result;
+    }
+
+    public fn reversed_int(USKInt source[]) : USKInt[] {
+        var USKInt result[] = [];
+        var USKInt index = source.length;
+        while (index > 0) {
+            index -= 1;
+            result.push(source[index]);
+        }
+        return result;
+    }
+
+    public fn contains_int(USKInt source[], USKInt target) : USKBool {
+        return source.contains(target);
+    }
+
+    public fn index_of_int(USKInt source[], USKInt target) : USKInt {
+        return source.index_of(target);
+    }
+
+    public fn count_int(USKInt source[], USKInt target) : USKInt {
+        var USKInt matches = 0;
+        for (var USKInt item in source) {
+            if (item == target) matches += 1;
+        }
+        return matches;
+    }
+
+    public fn sum_int(USKInt source[]) : USKInt {
+        var USKInt total = 0;
+        for (var USKInt item in source) total += item;
+        return total;
+    }
+
+    public fn minimum_int(USKInt source[], USKInt fallback) : USKInt {
+        if (source.is_empty()) return fallback;
+        var USKInt best = source[0];
+        for (var USKInt item in source) {
+            if (item < best) best = item;
+        }
+        return best;
+    }
+
+    public fn maximum_int(USKInt source[], USKInt fallback) : USKInt {
+        if (source.is_empty()) return fallback;
+        var USKInt best = source[0];
+        for (var USKInt item in source) {
+            if (item > best) best = item;
+        }
+        return best;
+    }
+
+    public fn take_int(USKInt source[], USKInt requested) : USKInt[] {
+        if (requested <= 0) return [];
+        var USKInt count = requested;
+        if (count > source.length) count = source.length;
+        return source.slice(0, count);
+    }
+
+    public fn drop_int(USKInt source[], USKInt requested) : USKInt[] {
+        var USKInt start = requested;
+        if (start < 0) start = 0;
+        if (start > source.length) start = source.length;
+        return source.slice(start, source.length - start);
+    }
+
+    public fn filter_nonnegative(USKInt source[]) : USKInt[] {
+        var USKInt result[] = [];
+        for (var USKInt item in source) {
+            if (item >= 0) result.push(item);
+        }
+        return result;
+    }
+
+    public fn map_square(USKInt source[]) : USKInt[] {
+        var USKInt result[] = [];
+        for (var USKInt item in source) result.push(item * item);
+        return result;
+    }
+
+    public fn append_int(USKInt destination[], USKInt source[]) : USKInt {
+        destination.reserve(destination.length + source.length);
+        for (var USKInt item in source) destination.push(item);
+        return destination.length;
+    }
+
+    public fn unique_int(USKInt source[]) : USKInt[] {
+        var USKInt result[] = [];
+        for (var USKInt item in source) {
+            if (!result.contains(item)) result.push(item);
+        }
+        return result;
+    }
+
+    public fn remove_value_int(USKInt source[], USKInt target) : USKInt {
+        var USKInt removed = 0;
+        var USKInt index = 0;
+        while (index < source.length) {
+            if (source[index] == target) {
+                source.remove_at(index);
+                removed += 1;
+            } else {
+                index += 1;
+            }
+        }
+        return removed;
+    }
+
+    public fn rotate_left_int(USKInt source[], USKInt distance) : USKInt[] {
+        var USKInt result[] = [];
+        var USKInt count = source.length;
+        if (count == 0) return result;
+        var USKInt offset = distance % count;
+        if (offset < 0) offset += count;
+        var USKInt index = 0;
+        while (index < count) {
+            result.push(source[(index + offset) % count]);
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn clone_string(USKString source[]) : USKString[] {
+        return source.copy();
+    }
+
+    public fn reversed_string(USKString source[]) : USKString[] {
+        return source.reverse();
+    }
+
+    public fn contains_string(USKString source[], USKString target) : USKBool {
+        return source.contains(target);
+    }
+
+    public fn join_strings(USKString source[], USKString separator) : USKString {
+        var USKString result = "";
+        var USKInt index = 0;
+        while (index < source.length) {
+            if (index > 0) result = result + separator;
+            result = result + source[index];
+            index += 1;
+        }
+        return result;
+    }
+
+    public fn first_string(USKString source[], USKString fallback) : USKString {
+        if (source.is_empty()) return fallback;
+        return source[0];
+    }
+
+    public fn last_string(USKString source[], USKString fallback) : USKString {
+        if (source.is_empty()) return fallback;
+        return source[source.length - 1];
+    }
+}

@@ -1,0 +1,193 @@
+// Byte-oriented string API backed by explicitly owned runtime value regions.
+public class string {
+    public extern fn length(USKString value) : USKInt;
+    public extern fn contains(USKString value, USKString needle) : USKBool;
+    public extern fn starts_with(USKString value, USKString prefix) : USKBool;
+    public extern fn ends_with(USKString value, USKString suffix) : USKBool;
+    public extern fn index_of(USKString value, USKString needle) : USKInt;
+    public extern fn substring(USKString value, USKInt start,
+                               USKInt count) : USKString;
+    public extern fn concat(USKString left, USKString right) : USKString;
+    public extern fn repeat(USKString value, USKInt count) : USKString;
+    public extern fn replace(USKString value, USKString needle,
+                             USKString replacement) : USKString;
+    public extern fn trim(USKString value) : USKString;
+    public extern fn to_upper(USKString value) : USKString;
+    public extern fn to_lower(USKString value) : USKString;
+    public extern fn is_empty(USKString value) : USKBool;
+    public extern fn split(USKString value, USKString separator) : USKAuto;
+
+    public fn left(USKString value, USKInt count) : USKString {
+        if (count < 0) return "";
+        if (count > string::length(value)) count = string::length(value);
+        return string::substring(value, 0, count);
+    }
+
+    public fn right(USKString value, USKInt count) : USKString {
+        if (count < 0) return "";
+        var USKInt size = string::length(value);
+        if (count >= size) return value;
+        return string::substring(value, size - count, count);
+    }
+
+    public fn is_blank(USKString value) : USKBool {
+        return string::is_empty(string::trim(value));
+    }
+
+    public fn equals_ignore_case(USKString left, USKString right) : USKBool {
+        return string::to_lower(left) == string::to_lower(right);
+    }
+
+    public fn remove_prefix(USKString value, USKString prefix) : USKString {
+        if (!string::starts_with(value, prefix)) return value;
+        return string::substring(value, string::length(prefix),
+            string::length(value) - string::length(prefix));
+    }
+
+    public fn remove_suffix(USKString value, USKString suffix) : USKString {
+        if (!string::ends_with(value, suffix)) return value;
+        return string::substring(value, 0,
+            string::length(value) - string::length(suffix));
+    }
+
+    public fn before_first(USKString value, USKString needle) : USKString {
+        var USKInt position = string::index_of(value, needle);
+        if (position < 0) return value;
+        return string::substring(value, 0, position);
+    }
+
+    public fn after_first(USKString value, USKString needle) : USKString {
+        var USKInt position = string::index_of(value, needle);
+        if (position < 0) return "";
+        var USKInt start = position + string::length(needle);
+        return string::substring(value, start,
+            string::length(value) - start);
+    }
+
+    public fn before_last(USKString value, USKString needle) : USKString {
+        if (string::is_empty(needle)) return value;
+        var USKInt search = 0;
+        var USKInt match = -1;
+        var USKInt value_length = string::length(value);
+        var USKInt needle_length = string::length(needle);
+        while (search <= value_length - needle_length) {
+            var USKString tail = string::substring(value, search,
+                value_length - search);
+            var USKInt found = string::index_of(tail, needle);
+            if (found < 0) break;
+            match = search + found;
+            search = match + needle_length;
+        }
+        if (match < 0) return value;
+        return string::substring(value, 0, match);
+    }
+
+    public fn after_last(USKString value, USKString needle) : USKString {
+        if (string::is_empty(needle)) return "";
+        var USKInt search = 0;
+        var USKInt match = -1;
+        var USKInt value_length = string::length(value);
+        var USKInt needle_length = string::length(needle);
+        while (search <= value_length - needle_length) {
+            var USKString tail = string::substring(value, search,
+                value_length - search);
+            var USKInt found = string::index_of(tail, needle);
+            if (found < 0) break;
+            match = search + found;
+            search = match + needle_length;
+        }
+        if (match < 0) return "";
+        var USKInt start = match + needle_length;
+        return string::substring(value, start,
+            string::length(value) - start);
+    }
+
+    public fn pad_left(USKString value, USKInt width,
+                       USKString fill) : USKString {
+        var USKInt missing = width - string::length(value);
+        if (missing <= 0 || string::is_empty(fill)) return value;
+        var USKString padding = string::repeat(fill, missing);
+        padding = string::substring(padding, 0, missing);
+        return string::concat(padding, value);
+    }
+
+    public fn pad_right(USKString value, USKInt width,
+                        USKString fill) : USKString {
+        var USKInt missing = width - string::length(value);
+        if (missing <= 0 || string::is_empty(fill)) return value;
+        var USKString padding = string::repeat(fill, missing);
+        padding = string::substring(padding, 0, missing);
+        return string::concat(value, padding);
+    }
+
+    public fn center(USKString value, USKInt width,
+                     USKString fill) : USKString {
+        var USKInt missing = width - string::length(value);
+        if (missing <= 0 || string::is_empty(fill)) return value;
+        var USKInt left_count = missing / 2;
+        var USKInt right_count = missing - left_count;
+        var USKString left_pad = string::repeat(fill, left_count);
+        var USKString right_pad = string::repeat(fill, right_count);
+        left_pad = string::substring(left_pad, 0, left_count);
+        right_pad = string::substring(right_pad, 0, right_count);
+        return string::concat(string::concat(left_pad, value), right_pad);
+    }
+
+    public fn truncate(USKString value, USKInt width,
+                       USKString suffix) : USKString {
+        if (width < 0) return "";
+        if (string::length(value) <= width) return value;
+        var USKInt suffix_length = string::length(suffix);
+        if (suffix_length >= width)
+            return string::substring(suffix, 0, width);
+        var USKInt prefix_length = width - suffix_length;
+        return string::concat(string::substring(value, 0, prefix_length), suffix);
+    }
+
+    public fn reverse(USKString value) : USKString {
+        var USKString output = "";
+        var USKInt index = string::length(value) - 1;
+        while (index >= 0) {
+            output = string::concat(output,
+                string::substring(value, index, 1));
+            index -= 1;
+        }
+        return output;
+    }
+
+    public fn count(USKString value, USKString needle) : USKInt {
+        if (string::is_empty(needle)) return 0;
+        var USKInt total = 0;
+        var USKInt cursor = 0;
+        var USKInt remaining = string::length(value);
+        var USKInt found = string::index_of(value, needle);
+        while (found >= 0) {
+            total += 1;
+            cursor += found + string::length(needle);
+            remaining = string::length(value) - cursor;
+            value = string::substring(value, cursor, remaining);
+            found = string::index_of(value, needle);
+        }
+        return total;
+    }
+
+    public fn join(USKString parts[], USKString separator) : USKString {
+        var USKString output = "";
+        var USKInt index = 0;
+        while (index < parts.length) {
+            if (index > 0) output = string::concat(output, separator);
+            output = string::concat(output, parts[index]);
+            index += 1;
+        }
+        return output;
+    }
+
+    public fn capitalize_ascii(USKString value) : USKString {
+        if (string::is_empty(value)) return value;
+        var USKString first = string::to_upper(
+            string::substring(value, 0, 1));
+        var USKString tail = string::to_lower(
+            string::substring(value, 1, string::length(value) - 1));
+        return string::concat(first, tail);
+    }
+}

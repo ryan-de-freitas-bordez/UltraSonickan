@@ -1,0 +1,154 @@
+import <path.usk>
+
+// Text-oriented filesystem conveniences over the host C runtime.
+// File reads return caller-region values; file writes report I/O failures.
+public class FileSystem {
+    public fn exists(USKString path) : USKBool {
+        return fs::exists(path);
+    }
+
+    public fn is_file(USKString path) : USKBool {
+        return fs::is_file(path);
+    }
+
+    public fn is_directory(USKString path) : USKBool {
+        return fs::is_directory(path);
+    }
+
+    public fn size_or_zero(USKString path) : USKInt {
+        if (!fs::exists(path)) return 0;
+        return fs::file_size(path);
+    }
+
+    public fn read_or_empty(USKString path) : USKString {
+        if (!fs::is_file(path)) return "";
+        return fs::read_text(path);
+    }
+
+    public fn read_lines_or_empty(USKString path) : USKString[] {
+        if (!fs::is_file(path)) return [];
+        return fs::read_lines(path);
+    }
+
+    public fn line_count(USKString path) : USKInt {
+        if (!fs::is_file(path)) return 0;
+        return fs::read_lines(path).length;
+    }
+
+    public fn first_line_or(USKString path,
+                            USKString fallback) : USKString {
+        var USKString lines[] = FileSystem::read_lines_or_empty(path);
+        if (lines.length == 0) return fallback;
+        return lines[0];
+    }
+
+    public fn last_line_or(USKString path,
+                           USKString fallback) : USKString {
+        var USKString lines[] = FileSystem::read_lines_or_empty(path);
+        if (lines.length == 0) return fallback;
+        return lines[lines.length - 1];
+    }
+
+    public fn read_line_or(USKString path, USKInt index,
+                           USKString fallback) : USKString {
+        if (index < 0) return fallback;
+        var USKString lines[] = FileSystem::read_lines_or_empty(path);
+        if (index >= lines.length) return fallback;
+        return lines[index];
+    }
+
+    public fn write_if_missing(USKString path,
+                               USKString text) : USKBool {
+        if (fs::exists(path)) return false;
+        return fs::write_text(path, text);
+    }
+
+    public fn write_if_changed(USKString path,
+                               USKString text) : USKBool {
+        if (fs::is_file(path) && fs::read_text(path) == text) return true;
+        return fs::write_text(path, text);
+    }
+
+    public fn append_line(USKString path, USKString line) : USKBool {
+        return fs::append_text(path, line + "/n");
+    }
+
+    public fn save_lines(USKString path, USKString lines[]) : USKBool {
+        return fs::write_lines(path, lines);
+    }
+
+    public fn ensure_directory(USKString path) : USKBool {
+        if (fs::is_directory(path)) return true;
+        return fs::create_directory(path);
+    }
+
+    public fn remove_if_present(USKString path) : USKBool {
+        if (!fs::exists(path)) return true;
+        return fs::remove_file(path);
+    }
+
+    public fn copy_if_missing(USKString source,
+                              USKString destination) : USKBool {
+        if (fs::exists(destination)) return false;
+        return fs::copy_file(source, destination);
+    }
+
+    public fn copy_if_different(USKString source,
+                                USKString destination) : USKBool {
+        if (!fs::is_file(source)) return false;
+        if (fs::is_file(destination) &&
+            fs::read_text(source) == fs::read_text(destination)) return true;
+        return fs::copy_file(source, destination);
+    }
+
+    public fn move_if_missing(USKString source,
+                              USKString destination) : USKBool {
+        if (!fs::exists(source) || fs::exists(destination)) return false;
+        return fs::move_file(source, destination);
+    }
+
+    public fn current_directory() : USKString {
+        return fs::current_directory();
+    }
+
+    public fn normalized_path(USKString path) : USKString {
+        return path::normalize(path);
+    }
+
+    public fn file_name(USKString path) : USKString {
+        return path::basename(path);
+    }
+
+    public fn file_extension(USKString path) : USKString {
+        return path::extension(path);
+    }
+
+    public fn backup_name(USKString path) : USKString {
+        return path::change_extension(path, "bak");
+    }
+
+    public fn make_backup(USKString path) : USKBool {
+        if (!fs::is_file(path)) return false;
+        var USKString backup = FileSystem::backup_name(path);
+        return fs::copy_file(path, backup);
+    }
+
+    public fn file_lines_contain(USKString path,
+                                 USKString value) : USKBool {
+        var USKString lines[] = FileSystem::read_lines_or_empty(path);
+        return lines.contains(value);
+    }
+
+    public fn read_joined_lines(USKString path,
+                                USKString separator) : USKString {
+        var USKString lines[] = FileSystem::read_lines_or_empty(path);
+        var USKString result = "";
+        var USKInt index = 0;
+        while (index < lines.length) {
+            if (index > 0) result = result + separator;
+            result = result + lines[index];
+            index += 1;
+        }
+        return result;
+    }
+}
